@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2025羽球賽程成績</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root {
+      --primary: #6366f1;
+      --primary-light: #eef2ff;
+      --gold: #f59e0b;
+      --silver: #94a3b8;
+      --bronze: #d97706;
+    }
+
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+
+    /* 四強賽程樣式 */
+    .bracket-container {
+      position: relative;
+      display: flex;
+      padding: 60px 40px;
+      overflow-x: auto;
+      min-height: 800px;
+      align-items: flex-start;
+    }
+
+    .svg-connections {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .round {
+      display: flex;
+      flex-direction: column;
+      width: 280px;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 10;
+    }
+
+    .round:not(:last-child) {
+      margin-right: 80px;
+    }
+
+    .matchup {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      position: relative;
+    }
+
+    .round-1 .matchup {
+      margin-bottom: 16px;
+    }
+
+    .round-2 {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+    }
+
+    .round-2 .matchup {
+      margin-bottom: 0;
+      height: auto;
+    }
+
+    .round-2>.title-label {
+      margin-bottom: 24px;
+    }
+
+    .round-2>.matchup[data-matchup="3"] {
+      margin-top: 36px;
+      gap: 0;
+    }
+
+    .round-2>.matchup[data-matchup="3"] .participant:first-child {
+      margin-bottom: 88px;
+    }
+
+    .round-2>.matchup[data-matchup="3"] .participant:last-child {
+      margin-top: 0;
+    }
+
+    .participant {
+      background: white;
+      border: 2px solid #e2e8f0;
+      height: 56px;
+      padding: 0 16px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .participant:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
+
+    .participant.winner {
+      border-color: var(--primary);
+      background: linear-gradient(135deg, #ffffff 0%, var(--primary-light) 100%);
+      font-weight: 600;
+      border-width: 3px;
+    }
+
+    .participant .team-name {
+      width: 70%;
+      font-size: 0.9rem;
+      font-weight: inherit;
+      color: #1e293b;
+    }
+
+    .score-badge {
+      background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+      color: #64748b;
+      font-size: 0.875rem;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-weight: 700;
+      min-width: 36px;
+      text-align: center;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+
+    .winner .score-badge {
+      background: linear-gradient(135deg, var(--primary) 0%, #4f46e5 100%);
+      color: white;
+      box-shadow: 0 4px 8px rgba(99, 102, 241, 0.3);
+    }
+
+    .round-winner {
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      height: 360px;
+    }
+
+    .round-winner>div:not(.title-label):not(.bronze-section) {
+      margin-top: 108px;
+    }
+
+    .round-winner .participant {
+      border: 3px solid var(--gold);
+      background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+      box-shadow: 0 8px 24px rgba(245, 158, 11, 0.3);
+    }
+
+    .round-winner .participant .team-name {
+      color: #92400e;
+      font-weight: 700;
+      width: 100%;
+      text-align: center;
+    }
+
+    .title-label {
+      text-align: center;
+      font-size: 1rem;
+      font-weight: 900;
+      color: black;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      margin-bottom: 24px;
+      height: 20px;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .bronze-section {
+      margin-top: 48px;
+      padding-top: 24px;
+    }
+
+    .bronze-section .title-label {
+      color: black;
+    }
+
+    .round-winner .bronze-section {
+      padding-top: 0;
+      margin-top: 225px;
+    }
+
+    /* 循環賽樣式 */
+    .geometry-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 60px;
+      width: 100%;
+    }
+
+    .link-line {
+      stroke: #cbd5e1;
+      stroke-width: 1.5;
+      stroke-dasharray: 4;
+    }
+
+    .score-badge-svg {
+      fill: white;
+      stroke-width: 1.5;
+      rx: 4;
+    }
+
+    .score-text {
+      font-size: 11px;
+      font-family: ui-monospace, monospace;
+      font-weight: 700;
+      text-anchor: middle;
+      dominant-baseline: central;
+    }
+
+    /* 共用樣式 */
+    .loading-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 400px;
+      padding: 60px 20px;
+    }
+
+    .spinner {
+      width: 60px;
+      height: 60px;
+      border: 5px solid #e0e7ff;
+      border-top-color: #6366f1;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .loading-text {
+      margin-top: 24px;
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: #6366f1;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+      }
+
+      50% {
+        opacity: 0.5;
+      }
+    }
+
+    .tabs {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+
+    .tab-button {
+      padding: 12px 32px;
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 1.125rem;
+      cursor: pointer;
+      transition: all 0.3s;
+      backdrop-filter: blur(10px);
+    }
+
+    .tab-button:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .tab-button.active {
+      background: white;
+      color: #6366f1;
+      border-color: white;
+      box-shadow: 0 4px 16px rgba(255, 255, 255, 0.3);
+    }
+
+    @media print {
+      .no-print {
+        display: none;
+      }
+
+      body {
+        background: white;
+      }
+
+      .bracket-container {
+        padding: 0;
+        background: white;
+      }
+
+      .title-label {
+        color: #64748b;
+        text-shadow: none;
+      }
+
+      .loading-container {
+        display: none;
+      }
+    }
+  </style>
+</head>
+
+<body class="text-gray-800 font-sans">
+
+  <div class="max-w-7xl mx-auto py-10 px-4">
+    <header class="mb-10 text-center no-print">
+      <h1 class="text-4xl font-black text-white mb-3 drop-shadow-lg" id="pageTitle">2025羽球賽程成績</h1>
+
+      <!-- 組別頁籤 -->
+      <div class="tabs mt-6">
+        <button class="tab-button active" data-category="男雙" onclick="switchCategory('男雙')">
+          👨‍🤝‍👨 男雙
+        </button>
+        <button class="tab-button" data-category="女雙" onclick="switchCategory('女雙')">
+          👩‍🤝‍👩 女雙
+        </button>
+        <button class="tab-button" data-category="混雙" onclick="switchCategory('混雙')">
+          👫 混雙
+        </button>
+      </div>
+    </header>
+
+    <!-- 名次卡片區塊 -->
+    <div class="mb-8 grid grid-cols-1 md:grid-cols-4 gap-4 no-print">
+      <div
+        class="bg-gradient-to-br from-amber-100 to-amber-200 p-5 rounded-2xl border-2 border-amber-300 text-center transform hover:scale-105 transition shadow-lg">
+        <div class="text-5xl mb-2">🥇</div>
+        <div class="text font-black text-amber-700 uppercase tracking-wider">第一名</div>
+        <div class="font-bold text-amber-900 mt-1" id="rank1">-</div>
+      </div>
+      <div
+        class="bg-gradient-to-br from-slate-200 to-slate-300 p-5 rounded-2xl border-2 border-slate-400 text-center transform hover:scale-105 transition shadow-lg">
+        <div class="text-5xl mb-2">🥈</div>
+        <div class="text font-black text-slate-600 uppercase tracking-wider">第二名</div>
+        <div class="font-bold text-slate-800 mt-1" id="rank2">-</div>
+      </div>
+      <div
+        class="bg-gradient-to-br from-orange-100 to-orange-200 p-5 rounded-2xl border-2 border-orange-300 text-center transform hover:scale-105 transition shadow-lg">
+        <div class="text-5xl mb-2">🥉</div>
+        <div class="text font-black text-orange-700 uppercase tracking-wider">第三名</div>
+        <div class="font-bold text-orange-900 mt-1" id="rank3">-</div>
+      </div>
+      <div
+        class="bg-gradient-to-br from-blue-100 to-blue-200 p-5 rounded-2xl border-2 border-blue-300 text-center transform hover:scale-105 transition shadow-lg">
+        <div class="text-5xl mb-2">④</div>
+        <div class="text font-black text-blue-700 uppercase tracking-wider">第四名</div>
+        <div class="font-bold text-blue-900 mt-1" id="rank4">-</div>
+      </div>
+    </div>
+
+    <!-- 四強賽程區塊 -->
+    <div class="bg-white/95 backdrop-blur shadow-2xl rounded-3xl overflow-hidden border-2 border-white/50 p-8 mb-8">
+      <h2 class="text-3xl font-black text-gray-800 mb-6 text-center">四強賽 ( Final Four )</h2>
+
+      <!-- 載入動畫 -->
+      <div class="loading-container" id="loadingFinals">
+        <div class="spinner"></div>
+        <div class="loading-text">正在載入四強資料...</div>
+      </div>
+
+      <div class="bracket-container hidden" id="bracket">
+        <!-- SVG 連接線 -->
+        <svg class="svg-connections" id="svg-connections">
+          <defs>
+            <linearGradient id="winnerGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%" style="stop-color:#6366f1;stop-opacity:1" />
+              <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:1" />
+            </linearGradient>
+          </defs>
+        </svg>
+
+        <!-- 第一輪: Semi-Finals -->
+        <div class="round round-1">
+          <div class="title-label">四強賽 (Semi-Finals)</div>
+          <div class="matchup" data-matchup="1">
+            <div class="participant" data-id="p1"><span class="team-name"></span><span class="score-badge"
+                style="display:none;"></span></div>
+            <div class="participant" data-id="p2"><span class="team-name"></span><span class="score-badge"
+                style="display:none;"></span></div>
+          </div>
+          <div class="matchup" data-matchup="2">
+            <div class="participant" data-id="p3"><span class="team-name"></span><span class="score-badge"
+                style="display:none;"></span></div>
+            <div class="participant" data-id="p4"><span class="team-name"></span><span class="score-badge"
+                style="display:none;"></span></div>
+          </div>
+        </div>
+
+        <!-- 第二輪: Finals -->
+        <div class="round round-2">
+          <div class="title-label">總決賽 (Finals)</div>
+          <div class="matchup" data-matchup="3">
+            <div class="participant" data-id="p5"><span class="team-name"></span><span class="score-badge"
+                style="display:none;"></span></div>
+            <div class="participant" data-id="p6"><span class="team-name"></span><span class="score-badge"
+                style="display:none;"></span>
+            </div>
+          </div>
+
+          <div class="bronze-section">
+            <div class="title-label">季殿軍賽 (3rd Place)</div>
+            <div class="matchup" data-matchup="4">
+              <div class="participant" data-id="p7"><span class="team-name"></span><span class="score-badge"
+                  style="display:none;"></span></div>
+              <div class="participant" data-id="p8"><span class="team-name"></span><span class="score-badge"
+                  style="display:none;"></span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 第三輪: Champion -->
+        <div class="round round-winner">
+          <div class="title-label">總冠軍 (Champion)</div>
+          <div class="flex flex-col items-center justify-center">
+            <div class="participant w-full" data-id="p9">
+              <span class="team-name text-center"></span>
+            </div>
+          </div>
+
+          <div class="bronze-section">
+            <div class="flex flex-col items-center justify-center">
+              <div class="participant w-full" data-id="p10"
+                style="border-color: #d97706; background: linear-gradient(135deg, #fff7ed 0%, #fed7aa 100%);">
+                <span class="team-name text-center"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 小組循環賽區塊 -->
+    <div class="bg-white/95 backdrop-blur shadow-2xl rounded-3xl overflow-hidden border-2 border-white/50 p-8">
+      <h2 class="text-3xl font-black text-gray-800 mb-6 text-center">小組循環賽</h2>
+
+      <!-- 載入動畫 -->
+      <div class="loading-container" id="loadingRoundRobin">
+        <div class="spinner"></div>
+        <div class="loading-text">正在載入小組循環賽資料...</div>
+      </div>
+
+      <div id="geometryDisplay" class="hidden flex flex-col items-center">
+        <div id="multiGeometryContainer" class="w-full"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 當前選中的組別
+    let currentCategory = '男雙';
+
+    // API 基礎 URL
+    // const API_BASE = 'https://script.google.com/macros/s/AKfycbymoFOTGAq7JEJjrgqvWhMpuHLjDvZ2_nlcszn8tYnHwVmpXWXwfmjP-sSiXp9CHFOnsg/exec';
+    const API_BASE = 'https://script.google.com/macros/s/AKfycbzvkFhLzRCiHUNMRpFAqjfaC2jBYBKuWtfZDp-pL-mGd_6x_BLn1JQQ_hZB4HkCt_i5/exec';
+
+    // API 端點配置
+    // https://script.google.com/u/0/home/projects/1FelJ6UFtzeZ1fUj5qmUfjaQbnTRHO_ic_kp8waUXx3vbwuBLGO6pZYRX/edit
+    // https://script.google.com/u/0/home/projects/1O0M5P2spv05-36cLRaIdIXcp8AJTqH4_y5wZVkLiXs3n4mC3-Wu-Qd_Z/edit
+    const FINALS_API = {
+      '男雙': `${API_BASE}?type=finals&sheet=男雙成績表`,
+      '女雙': `${API_BASE}?type=finals&sheet=女雙成績表`,
+      '混雙': `${API_BASE}?type=finals&sheet=混雙成績表`
+    };
+
+    const ROUNDROBIN_API = {
+      '男雙': `${API_BASE}?type=roundrobin&sheet=男雙成績表`,
+      '女雙': `${API_BASE}?type=roundrobin&sheet=女雙成績表`,
+      '混雙': `${API_BASE}?type=roundrobin&sheet=混雙成績表`
+    };
+
+    // 切換組別
+    function switchCategory(category) {
+      currentCategory = category;
+
+      // 更新頁籤狀態
+      document.querySelectorAll('.tab-button').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.category === category);
+      });
+
+      // 清空名次卡片
+      document.getElementById('rank1').textContent = '-';
+      document.getElementById('rank2').textContent = '-';
+      document.getElementById('rank3').textContent = '-';
+      document.getElementById('rank4').textContent = '-';
+
+      // 重置並顯示載入動畫
+      const loadingFinals = document.getElementById('loadingFinals');
+      loadingFinals.innerHTML = '<div class="spinner"></div><div class="loading-text">正在載入四強資料...</div>';
+      loadingFinals.style.display = 'flex';
+      document.getElementById('bracket').classList.add('hidden');
+
+      const loadingRoundRobin = document.getElementById('loadingRoundRobin');
+      loadingRoundRobin.innerHTML = '<div class="spinner"></div><div class="loading-text">正在載入小組循環賽資料...</div>';
+      loadingRoundRobin.style.display = 'flex';
+      document.getElementById('geometryDisplay').classList.add('hidden');
+
+      // 載入新資料
+      loadAllData();
+    }
+
+    // 載入所有資料
+    async function loadAllData() {
+      await Promise.all([
+        loadFinalsData(),
+        loadRoundRobinData()
+      ]);
+    }
+
+    // 載入四強資料
+    async function loadFinalsData() {
+      try {
+        const url = FINALS_API[currentCategory];
+        const response = await fetch(url);
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        parseAndUpdateBracket(data);
+      } catch (error) {
+        console.error('載入四強資料失敗:', error);
+        // 延遲顯示錯誤訊息，避免載入中就顯示錯誤
+        setTimeout(() => {
+          const loadingElement = document.getElementById('loadingFinals');
+          if (loadingElement && loadingElement.style.display !== 'none') {
+            loadingElement.innerHTML = '<p class="text-red-600 font-bold">載入四強資料失敗: ' + error.message + '</p>';
+          }
+        }, 500);
+      }
+    }
+
+    // 載入小組循環賽資料
+    async function loadRoundRobinData() {
+      try {
+        const url = ROUNDROBIN_API[currentCategory];
+        console.log('載入小組循環賽 URL:', url);
+        const response = await fetch(url);
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log('小組循環賽資料:', data);
+        parseAndRenderFromJSON(data);
+      } catch (error) {
+        console.error('載入小組循環賽資料失敗:', error);
+        console.error('當前組別:', currentCategory);
+        console.error('API URL:', ROUNDROBIN_API[currentCategory]);
+        // 延遲顯示錯誤訊息，避免載入中就顯示錯誤
+        setTimeout(() => {
+          const loadingElement = document.getElementById('loadingRoundRobin');
+          if (loadingElement && loadingElement.style.display !== 'none') {
+            loadingElement.innerHTML = '<p class="text-red-600 font-bold">載入小組循環賽資料失敗: ' + error.message + '</p>';
+          }
+        }, 500);
+      }
+    }
+
+    // 頁面載入時自動讀取資料
+    window.addEventListener('load', loadAllData);
+
+    // 每分鐘自動更新
+    setInterval(loadAllData, 60000);
+
+    // ===== 四強賽程相關函數 =====
+    function parseAndUpdateBracket(data) {
+      // 根據當前組別動態搜尋對應的 stage
+      const semi1 = data.find(stage => stage.stage === `${currentCategory}四強上`);
+      const semi2 = data.find(stage => stage.stage === `${currentCategory}四強下`);
+      const final = data.find(stage => stage.stage === `${currentCategory}冠亞`);
+      const bronze = data.find(stage => stage.stage === `${currentCategory}季殿`);
+
+      if (semi1 && semi1.players.length === 2) {
+        const p1 = semi1.players[0];
+        const p2 = semi1.players[1];
+        updateParticipant('p1', extractTeamName(p1.name), p1.score[0], p1.score[0] > p1.score[1]);
+        updateParticipant('p2', extractTeamName(p2.name), p2.score[0], p2.score[0] > p2.score[1]);
+      }
+
+      if (semi2 && semi2.players.length === 2) {
+        const p3 = semi2.players[0];
+        const p4 = semi2.players[1];
+        updateParticipant('p3', extractTeamName(p3.name), p3.score[0], p3.score[0] > p3.score[1]);
+        updateParticipant('p4', extractTeamName(p4.name), p4.score[0], p4.score[0] > p4.score[1]);
+      }
+
+      if (final && final.players.length === 2) {
+        const p5 = final.players[0];
+        const p6 = final.players[1];
+        updateParticipant('p5', extractTeamName(p5.name), p5.score[0], p5.score[0] > p5.score[1]);
+        updateParticipant('p6', extractTeamName(p6.name), p6.score[0], p6.score[0] > p6.score[1]);
+
+        const winner = p5.score[0] > p5.score[1] ? p5 : p6;
+        updateParticipant('p9', extractTeamName(winner.name), '', true);
+      }
+
+      if (bronze && bronze.players.length === 2) {
+        const p7 = bronze.players[0];
+        const p8 = bronze.players[1];
+        updateParticipant('p7', extractTeamName(p7.name), p7.score[0], p7.score[0] > p7.score[1]);
+        updateParticipant('p8', extractTeamName(p8.name), p8.score[0], p8.score[0] > p8.score[1]);
+
+        const winner = p7.score[0] > p7.score[1] ? p7 : p8;
+        updateParticipant('p10', extractTeamName(winner.name), '', true);
+      }
+
+      updateRankingCards();
+
+      document.getElementById('loadingFinals').style.display = 'none';
+      document.getElementById('bracket').classList.remove('hidden');
+
+      setTimeout(() => {
+        drawConnections();
+      }, 50);
+    }
+
+    function extractTeamName(fullName) {
+      return fullName.replace(/.*[:：]\s*/, '');
+    }
+
+    function updateParticipant(id, name, score, isWinner = false) {
+      const elem = document.querySelector(`[data-id="${id}"]`);
+      if (!elem) return;
+
+      const teamName = elem.querySelector('.team-name');
+      const scoreBadge = elem.querySelector('.score-badge');
+
+      if (teamName) teamName.textContent = name;
+      if (scoreBadge) {
+        if (score) {
+          scoreBadge.textContent = score;
+          scoreBadge.style.display = 'inline-block';
+        } else {
+          scoreBadge.style.display = 'none';
+        }
+      }
+
+      if (isWinner) {
+        elem.classList.add('winner');
+      } else {
+        elem.classList.remove('winner');
+      }
+    }
+
+    function updateRankingCards() {
+      const p9Name = document.querySelector('[data-id="p9"] .team-name').textContent;
+      const p5Name = document.querySelector('[data-id="p5"] .team-name').textContent;
+      const p6Name = document.querySelector('[data-id="p6"] .team-name').textContent;
+
+      const p10Name = document.querySelector('[data-id="p10"] .team-name').textContent;
+      const p7Name = document.querySelector('[data-id="p7"] .team-name').textContent;
+      const p8Name = document.querySelector('[data-id="p8"] .team-name').textContent;
+
+      const rank1 = document.getElementById('rank1');
+      const rank2 = document.getElementById('rank2');
+      const rank3 = document.getElementById('rank3');
+      const rank4 = document.getElementById('rank4');
+
+      // 計算第二名 (決賽中未獲勝者)
+      let secondPlaceName = '-';
+      if (p9Name) {
+        secondPlaceName = (p9Name === p5Name) ? p6Name : p5Name;
+      }
+
+      // 計算第四名 (季殿賽中未獲勝者)
+      let fourthPlaceName = '-';
+      if (p10Name) {
+        fourthPlaceName = (p10Name === p7Name) ? p8Name : p7Name;
+      }
+
+      if (rank1) rank1.textContent = p9Name || '-';
+      if (rank2) rank2.textContent = secondPlaceName || '-';
+      if (rank3) rank3.textContent = p10Name || '-';
+      if (rank4) rank4.textContent = fourthPlaceName || '-';
+    }
+
+    function drawConnections() {
+      const svg = document.getElementById('svg-connections');
+      svg.innerHTML = svg.innerHTML.split('</defs>')[0] + '</defs>';
+
+      const isWinner = (id) => document.querySelector(`[data-id="${id}"]`)?.classList.contains('winner');
+
+      if (!isWinner('p1')) drawPath('p1', 'p5', false);
+      if (!isWinner('p2')) drawPath('p2', 'p5', false);
+      if (!isWinner('p3')) drawPath('p3', 'p6', false);
+      if (!isWinner('p4')) drawPath('p4', 'p6', false);
+      if (!isWinner('p5')) drawPath('p5', 'p9', false);
+      if (!isWinner('p6')) drawPath('p6', 'p9', false);
+      if (!isWinner('p7')) drawPath('p7', 'p10', false);
+      if (!isWinner('p8')) drawPath('p8', 'p10', false);
+
+      if (isWinner('p1')) drawPath('p1', 'p5', true);
+      if (isWinner('p2')) drawPath('p2', 'p5', true);
+      if (isWinner('p3')) drawPath('p3', 'p6', true);
+      if (isWinner('p4')) drawPath('p4', 'p6', true);
+      if (isWinner('p5')) drawPath('p5', 'p9', true);
+      if (isWinner('p6')) drawPath('p6', 'p9', true);
+      if (isWinner('p7')) drawPath('p7', 'p10', true);
+      if (isWinner('p8')) drawPath('p8', 'p10', true);
+    }
+
+    function drawPath(fromId, toId, isWinner) {
+      const from = document.querySelector(`[data-id="${fromId}"]`);
+      const to = document.querySelector(`[data-id="${toId}"]`);
+      if (!from || !to) return;
+
+      const svg = document.getElementById('svg-connections');
+      const fromRect = from.getBoundingClientRect();
+      const toRect = to.getBoundingClientRect();
+      const containerRect = svg.parentElement.getBoundingClientRect();
+
+      const x1 = fromRect.right - containerRect.left;
+      const y1 = fromRect.top + fromRect.height / 2 - containerRect.top;
+      const x2 = toRect.left - containerRect.left;
+      const y2 = toRect.top + toRect.height / 2 - containerRect.top;
+
+      const midX = (x1 + x2) / 2;
+      const radius = 12;
+
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+
+      let d;
+      if (y1 < y2) {
+        d = `M ${x1} ${y1} 
+             L ${midX - radius} ${y1}
+             Q ${midX} ${y1} ${midX} ${y1 + radius}
+             L ${midX} ${y2 - radius}
+             Q ${midX} ${y2} ${midX + radius} ${y2}
+             L ${x2} ${y2}`;
+      } else if (y1 > y2) {
+        d = `M ${x1} ${y1}
+             L ${midX - radius} ${y1}
+             Q ${midX} ${y1} ${midX} ${y1 - radius}
+             L ${midX} ${y2 + radius}
+             Q ${midX} ${y2} ${midX + radius} ${y2}
+             L ${x2} ${y2}`;
+      } else {
+        d = `M ${x1} ${y1} L ${x2} ${y2}`;
+      }
+
+      path.setAttribute('d', d);
+      path.setAttribute('fill', 'none');
+
+      if (isWinner) {
+        path.setAttribute('stroke', 'url(#winnerGradient)');
+        path.setAttribute('stroke-width', '4');
+        path.style.filter = 'drop-shadow(0 2px 4px rgba(99, 102, 241, 0.3))';
+      } else {
+        path.setAttribute('stroke', '#cbd5e1');
+        path.setAttribute('stroke-width', '2');
+      }
+
+      path.setAttribute('stroke-linecap', 'round');
+      path.setAttribute('stroke-linejoin', 'round');
+
+      svg.appendChild(path);
+    }
+
+    // ===== 小組循環賽相關函數 =====
+    function parseAndRenderFromJSON(data) {
+      if (!data || data.length === 0) {
+        document.getElementById('loadingRoundRobin').innerHTML = '<p class="text-gray-600">沒有小組循環賽資料</p>';
+        return;
+      }
+
+      const multiContainer = document.getElementById('multiGeometryContainer');
+      multiContainer.innerHTML = '';
+
+      data.forEach(group => {
+        const title = group.stage;
+        const players = group.players;
+
+        if (!players || players.length < 3) return;
+
+        const teams = players.map(p => p.name);
+        const scoresData = {};
+        const rankings = {};
+
+        players.forEach(player => {
+          rankings[player.name] = player.rank || '';
+
+          if (player.matches) {
+            scoresData[player.name] = {};
+            player.matches.forEach(match => {
+              scoresData[player.name][match.opponent] = {
+                my: match.myScore,
+                op: match.opScore
+              };
+            });
+          }
+        });
+
+        renderSingleGeometry(multiContainer, title, teams, scoresData, rankings);
+      });
+
+      document.getElementById('loadingRoundRobin').style.display = 'none';
+      document.getElementById('geometryDisplay').classList.remove('hidden');
+    }
+
+    function renderSingleGeometry(parent, title, teams, scoresData, rankings) {
+      const groupDiv = document.createElement('div');
+      groupDiv.className = "geometry-group";
+      groupDiv.innerHTML = `<h2 class="text-2xl font-black text-gray-800 mb-[20px]">${title}</h2>`;
+      const svgWrapper = document.createElement('div');
+      svgWrapper.className = "w-full flex justify-center bg-white";
+      const count = teams.length;
+      const baseSize = 800,
+        cx = baseSize / 2,
+        cy = baseSize / 2,
+        r = 200;
+      const points = [];
+      let startAngle = -Math.PI / 2;
+      if (count % 2 === 0) startAngle += Math.PI / count;
+      for (let i = 0; i < count; i++) {
+        const angle = (2 * Math.PI * i) / count + startAngle;
+        points.push({
+          x: cx + r * Math.cos(angle),
+          y: cy + r * Math.sin(angle),
+          name: teams[i]
+        });
+      }
+      let minX = Infinity,
+        minY = Infinity,
+        maxX = -Infinity,
+        maxY = -Infinity;
+      const updateBounds = (x, y, radius = 0) => {
+        minX = Math.min(minX, x - radius);
+        minY = Math.min(minY, y - radius);
+        maxX = Math.max(maxX, x + radius);
+        maxY = Math.max(maxY, y + radius);
+      };
+      let contentLines = "",
+        contentScores = "",
+        contentNodes = "";
+      for (let i = 0; i < count; i++) {
+        for (let j = i + 1; j < count; j++) {
+          contentLines += `<line x1="${points[i].x}" y1="${points[i].y}" x2="${points[j].x}" y2="${points[j].y}" class="link-line" />`;
+        }
+      }
+      for (let i = 0; i < count; i++) {
+        for (let j = i + 1; j < count; j++) {
+          const p1 = points[i],
+            p2 = points[j];
+          const match = scoresData[p1.name] && scoresData[p1.name][p2.name];
+          if (match) {
+            const offset = 0.35;
+            const label1 = {
+              x: p1.x * (1 - offset) + p2.x * offset,
+              y: p1.y * (1 - offset) + p2.y * offset,
+              score: match.my,
+              win: match.my > match.op
+            };
+            const label2 = {
+              x: p2.x * (1 - offset) + p1.x * offset,
+              y: p2.y * (1 - offset) + p1.y * offset,
+              score: match.op,
+              win: match.op > match.my
+            };
+            [label1, label2].forEach(l => {
+              const color = l.win ? "#16a34a" : "#dc2626";
+              contentScores += `
+                <rect x="${l.x - 12}" y="${l.y - 10}" width="24" height="20" class="score-badge-svg" stroke="${color}" />
+                <text x="${l.x}" y="${l.y}" class="score-text" fill="${color}">${l.score}</text>
+              `;
+              updateBounds(l.x, l.y, 15);
+            });
+          }
+        }
+      }
+      points.forEach(p => {
+        const labelOffsetY = p.y >= cy - 5 ? 45 : -35;
+        const rank = rankings[p.name] || "";
+        contentNodes += `
+          <circle cx="${p.x}" cy="${p.y}" r="25" fill="white" stroke="#2563eb" stroke-width="3" />
+          <text x="${p.x}" y="${p.y}" class="text-lg font-black fill-blue-600" text-anchor="middle" dominant-baseline="central">${rank}</text>
+          <text x="${p.x}" y="${p.y + labelOffsetY}" class="text-sm font-bold fill-gray-800" text-anchor="middle" style="text-shadow: 1px 1px 0 #fff">${p.name}</text>
+        `;
+        updateBounds(p.x, p.y, 25);
+        updateBounds(p.x, p.y + labelOffsetY, 15);
+      });
+      const padding = 40;
+      const viewBoxX = minX - padding,
+        viewBoxY = minY - padding;
+      const viewBoxW = (maxX - minX) + padding * 2,
+        viewBoxH = (maxY - minY) + padding * 2;
+      svgWrapper.innerHTML = `<svg viewBox="${viewBoxX} ${viewBoxY} ${viewBoxW} ${viewBoxH}" style="width: 100%; height: auto; max-width: ${viewBoxW}px;">${contentLines}${contentScores}${contentNodes}</svg>`;
+      groupDiv.appendChild(svgWrapper);
+      parent.appendChild(groupDiv);
+    }
+
+    // 響應式重繪
+    window.addEventListener('resize', drawConnections);
+  </script>
+
+</body>
+
+</html>
