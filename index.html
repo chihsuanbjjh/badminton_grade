@@ -704,6 +704,12 @@
 
     function drawConnections() {
       const svg = document.getElementById('svg-connections');
+      const container = document.querySelector('.bracket-container');
+
+      // 設定 SVG 大小為容器的捲動內容大小，確保在手機上也能完整顯示
+      svg.style.width = `${container.scrollWidth}px`;
+      svg.style.height = `${container.scrollHeight}px`;
+
       svg.innerHTML = svg.innerHTML.split('</defs>')[0] + '</defs>';
 
       const isWinner = (id) => document.querySelector(`[data-id="${id}"]`)?.classList.contains('winner');
@@ -733,14 +739,17 @@
       if (!from || !to) return;
 
       const svg = document.getElementById('svg-connections');
+      const container = svg.parentElement;
+
       const fromRect = from.getBoundingClientRect();
       const toRect = to.getBoundingClientRect();
-      const containerRect = svg.parentElement.getBoundingClientRect();
+      const containerRect = container.getBoundingClientRect();
 
-      const x1 = fromRect.right - containerRect.left;
-      const y1 = fromRect.top + fromRect.height / 2 - containerRect.top;
-      const x2 = toRect.left - containerRect.left;
-      const y2 = toRect.top + toRect.height / 2 - containerRect.top;
+      // 計算座標時加上 scrollLeft 和 scrollTop，以補償捲動偏移
+      const x1 = (fromRect.right - containerRect.left) + container.scrollLeft;
+      const y1 = (fromRect.top + fromRect.height / 2 - containerRect.top) + container.scrollTop;
+      const x2 = (toRect.left - containerRect.left) + container.scrollLeft;
+      const y2 = (toRect.top + toRect.height / 2 - containerRect.top) + container.scrollTop;
 
       const midX = (x1 + x2) / 2;
       const radius = 12;
